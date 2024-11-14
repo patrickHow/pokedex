@@ -108,6 +108,24 @@ func (dex *Dex) cmdPokedex() {
 	}
 }
 
+func parseArgs(input string) (cmd, param *string) {
+	args := strings.Split(input, " ")
+
+	switch len(args) {
+	case 1:
+		cmd = &args[0]
+		param = nil
+	case 2:
+		cmd = &args[0]
+		param = &args[1]
+	default:
+		cmd = nil
+		param = nil
+	}
+
+	return
+}
+
 func (dex *Dex) Repl() {
 	dex.welcomeMessage()
 
@@ -117,23 +135,14 @@ func (dex *Dex) Repl() {
 		// Get a new command from the user
 		// Parse a potential parameter as well
 		cli.Scan()
-		input := strings.Split((cli.Text()), " ")
-		var cmd string
-		var param string
+		cmd, param := parseArgs(cli.Text())
 
-		// TODO this is a bit janky
-		switch len(input) {
-		case 1:
-			cmd = input[0]
-		case 2:
-			cmd = input[0]
-			param = input[1]
-		default:
-			fmt.Println("Error: too many params")
+		// Nil command indicates issue parsing args
+		if cmd == nil {
 			continue
 		}
 
-		switch cmd {
+		switch *cmd {
 		case "help":
 			dex.cmdHelp()
 		case "exit":
@@ -143,22 +152,22 @@ func (dex *Dex) Repl() {
 		case "mapb":
 			dex.cmdMapb()
 		case "explore":
-			if param == "" {
+			if param == nil {
 				fmt.Println("Error: explore command needs an area!")
 			} else {
-				dex.cmdExplore(param)
+				dex.cmdExplore(*param)
 			}
 		case "catch":
-			if param == "" {
+			if param == nil {
 				fmt.Println("Error: catch command needs a name!")
 			} else {
-				dex.cmdCatch(param)
+				dex.cmdCatch(*param)
 			}
 		case "inspect":
-			if param == "" {
+			if param == nil {
 				fmt.Println("Error: inspect command needs a name!")
 			} else {
-				dex.cmdInspect(param)
+				dex.cmdInspect(*param)
 			}
 		case "pokedex":
 			dex.cmdPokedex()
