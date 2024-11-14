@@ -30,23 +30,23 @@ func NewDex() *Dex {
 	}
 }
 
-func (dex *Dex) WelcomeMessage() {
+func (dex *Dex) welcomeMessage() {
 	fmt.Println("Welcome to the Pokedex! Please enter a command")
 }
 
-func (dex *Dex) Help() {
+func (dex *Dex) cmdHelp() {
 	fmt.Println("Usage: ")
 	for _, cmd := range dex.cmdList {
 		cmd.PrintCommand()
 	}
 }
 
-func (dex *Dex) Exit() {
+func (dex *Dex) cmdExit() {
 	fmt.Println("Goodbye!")
 	os.Exit(0)
 }
 
-func (dex *Dex) Map() {
+func (dex *Dex) cmdMap() {
 	mapdata, err := dex.pokeAPI.GetNextMapData()
 	if err == nil {
 		fmt.Println("Location data retrieved: ")
@@ -58,7 +58,7 @@ func (dex *Dex) Map() {
 	}
 }
 
-func (dex *Dex) Mapb() {
+func (dex *Dex) cmdMapb() {
 	mapdata, err := dex.pokeAPI.GetPrevMapData()
 	if err == nil {
 		fmt.Println("Previous location data retrieved: ")
@@ -70,7 +70,7 @@ func (dex *Dex) Mapb() {
 	}
 }
 
-func (dex *Dex) Explore(area string) {
+func (dex *Dex) cmdExplore(area string) {
 	areaData, err := dex.pokeAPI.GetAreaData(area)
 	if err == nil {
 		fmt.Printf("Exploring %s\n Found Pokemon: \n\n", area)
@@ -82,7 +82,7 @@ func (dex *Dex) Explore(area string) {
 	}
 }
 
-func (dex *Dex) Catch(name string) {
+func (dex *Dex) cmdCatch(name string) {
 	pokemonData, err := dex.pokeAPI.GetPokemonData(name)
 	if err == nil {
 		fmt.Printf("%s was caught! \n", name)
@@ -93,7 +93,7 @@ func (dex *Dex) Catch(name string) {
 	}
 }
 
-func (dex *Dex) Inspect(name string) {
+func (dex *Dex) cmdInspect(name string) {
 	if mon, ok := dex.caughtList[name]; ok {
 		mon.DisplayPokemonData()
 	} else {
@@ -101,7 +101,7 @@ func (dex *Dex) Inspect(name string) {
 	}
 }
 
-func (dex *Dex) Pokedex() {
+func (dex *Dex) cmdPokedex() {
 	fmt.Println("Your pokedex: ")
 	for name := range dex.caughtList {
 		fmt.Printf(" - %s\n", name)
@@ -109,7 +109,7 @@ func (dex *Dex) Pokedex() {
 }
 
 func (dex *Dex) Repl() {
-	dex.WelcomeMessage()
+	dex.welcomeMessage()
 
 	cli := bufio.NewScanner(os.Stdin)
 
@@ -135,33 +135,33 @@ func (dex *Dex) Repl() {
 
 		switch cmd {
 		case "help":
-			dex.Help()
+			dex.cmdHelp()
 		case "exit":
-			dex.Exit()
+			dex.cmdExit()
 		case "map":
-			dex.Map()
+			dex.cmdMap()
 		case "mapb":
-			dex.Mapb()
+			dex.cmdMapb()
 		case "explore":
 			if param == "" {
 				fmt.Println("Error: explore command needs an area!")
 			} else {
-				dex.Explore(param)
+				dex.cmdExplore(param)
 			}
 		case "catch":
 			if param == "" {
 				fmt.Println("Error: catch command needs a name!")
 			} else {
-				dex.Catch(param)
+				dex.cmdCatch(param)
 			}
 		case "inspect":
 			if param == "" {
 				fmt.Println("Error: inspect command needs a name!")
 			} else {
-				dex.Inspect(param)
+				dex.cmdInspect(param)
 			}
 		case "pokedex":
-			dex.Pokedex()
+			dex.cmdPokedex()
 		default:
 			fmt.Println("Invalid command")
 		}
