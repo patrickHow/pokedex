@@ -9,20 +9,24 @@ import (
 )
 
 type Dex struct {
-	cmdList []CLICommand
-	pokeAPI *pokeapi.PokeAPI
+	cmdList    []CLICommand
+	caughtList map[string]pokeapi.PokemonData
+	pokeAPI    *pokeapi.PokeAPI
 }
 
 func NewDex() *Dex {
 	return &Dex{
 		cmdList: []CLICommand{
-			CLICommand{"help", "Displays a help message"},
-			CLICommand{"exit", "Exit the pokedex"},
-			CLICommand{"map", "Display location data, incrementing with each call"},
-			CLICommand{"mapb", "Display previous map data"},
-			CLICommand{"explore", "Display info on pokemon in a specific area"},
+			{"help", "Displays a help message"},
+			{"exit", "Exit the pokedex"},
+			{"map", "Display location data, incrementing with each call"},
+			{"mapb", "Display previous map data"},
+			{"explore", "Display info on pokemon in a specific area"},
+			{"catch", "Catch a pokemon and add it to your pokedex"},
+			{"pokedex", "List all caught pokemon"},
 		},
-		pokeAPI: pokeapi.NewPokeAPI(),
+		caughtList: make(map[string]pokeapi.PokemonData),
+		pokeAPI:    pokeapi.NewPokeAPI(),
 	}
 }
 
@@ -31,7 +35,7 @@ func (dex *Dex) WelcomeMessage() {
 }
 
 func (dex *Dex) Help() {
-	fmt.Println("Usage: \n")
+	fmt.Println("Usage: ")
 	for _, cmd := range dex.cmdList {
 		cmd.PrintCommand()
 	}
@@ -78,6 +82,32 @@ func (dex *Dex) Explore(area string) {
 	}
 }
 
+func (dex *Dex) Catch(name string) {
+	pokemonData, err := dex.pokeAPI.GetPokemonData(name)
+	if err == nil {
+		fmt.Printf("%s was caught! \n", name)
+		// Add the caught mon to the dex
+		dex.caughtList[name] = pokemonData
+	} else {
+		fmt.Printf("Error catching mon: %s\n", err)
+	}
+}
+
+func (dex *Dex) Inspect(name string) {
+	if mon, ok := dex.caughtList[name]; ok {
+		mon.DisplayPokemonData()
+	} else {
+		fmt.Printf("You have not caught a %s\n", name)
+	}
+}
+
+func (dex *Dex) Pokedex() {
+	fmt.Println("Your pokedex: ")
+	for name := range dex.caughtList {
+		fmt.Printf(" - %s\n", name)
+	}
+}
+
 func (dex *Dex) Repl() {
 	dex.WelcomeMessage()
 
@@ -118,6 +148,20 @@ func (dex *Dex) Repl() {
 			} else {
 				dex.Explore(param)
 			}
+		case "catch":
+			if param == "" {
+				fmt.Println("Error: catch command needs a name!")
+			} else {
+				dex.Catch(param)
+			}
+		case "inspect":
+			if param == "" {
+				fmt.Println("Error: inspect command needs a name!")
+			} else {
+				dex.Inspect(param)
+			}
+		case "pokedex":
+			dex.Pokedex()
 		default:
 			fmt.Println("Invalid command")
 		}

@@ -23,3 +23,7 @@ func (api *PokeAPI) GetPrevMapData() (MapData, error) {
 func (api *PokeAPI) GetAreaData(area string) (AreaData, error) {
 	return GetAreaData(api.requestManager, area)
 }
+
+func (api *PokeAPI) GetPokemonData(name string) (PokemonData, error) {
+	return GetPokemonData(api.requestManager, name)
+}
