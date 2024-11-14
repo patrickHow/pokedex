@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"pokedex/internal/pokeapi"
+	"strings"
 )
 
 type Dex struct {
@@ -19,6 +20,7 @@ func NewDex() *Dex {
 			CLICommand{"exit", "Exit the pokedex"},
 			CLICommand{"map", "Display location data, incrementing with each call"},
 			CLICommand{"mapb", "Display previous map data"},
+			CLICommand{"explore", "Display info on pokemon in a specific area"},
 		},
 		pokeAPI: pokeapi.NewPokeAPI(),
 	}
@@ -64,6 +66,18 @@ func (dex *Dex) Mapb() {
 	}
 }
 
+func (dex *Dex) Explore(area string) {
+	areaData, err := dex.pokeAPI.GetAreaData(area)
+	if err == nil {
+		fmt.Printf("Exploring %s\n Found Pokemon: \n\n", area)
+		for _, encounter := range areaData.PokemonEncounters {
+			fmt.Printf(" - %s\n", encounter.Pokemon.Name)
+		}
+	} else {
+		fmt.Printf("Error retrieving area data: %s\n", err)
+	}
+}
+
 func (dex *Dex) Repl() {
 	dex.WelcomeMessage()
 
@@ -71,8 +85,23 @@ func (dex *Dex) Repl() {
 
 	for {
 		// Get a new command from the user
+		// Parse a potential parameter as well
 		cli.Scan()
-		cmd := cli.Text()
+		input := strings.Split((cli.Text()), " ")
+		var cmd string
+		var param string
+
+		// TODO this is a bit janky
+		switch len(input) {
+		case 1:
+			cmd = input[0]
+		case 2:
+			cmd = input[0]
+			param = input[1]
+		default:
+			fmt.Println("Error: too many params")
+			continue
+		}
 
 		switch cmd {
 		case "help":
@@ -83,6 +112,12 @@ func (dex *Dex) Repl() {
 			dex.Map()
 		case "mapb":
 			dex.Mapb()
+		case "explore":
+			if param == "" {
+				fmt.Println("Error: explore command needs an area!")
+			} else {
+				dex.Explore(param)
+			}
 		default:
 			fmt.Println("Invalid command")
 		}

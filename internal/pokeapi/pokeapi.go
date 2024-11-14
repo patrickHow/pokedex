@@ -19,3 +19,7 @@ func (api *PokeAPI) GetNextMapData() (MapData, error) {
 func (api *PokeAPI) GetPrevMapData() (MapData, error) {
 	return api.mapDataManager.PrevMapData(api.requestManager)
 }
+
+func (api *PokeAPI) GetAreaData(area string) (AreaData, error) {
+	return GetAreaData(api.requestManager, area)
+}
